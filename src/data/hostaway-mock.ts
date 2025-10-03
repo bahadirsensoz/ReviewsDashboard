@@ -1,4 +1,4 @@
-﻿import { HostawayReview } from "@/types/reviews";
+import { HostawayReview } from "@/types/reviews";
 
 export const hostawayMockReviews: HostawayReview[] = [
   {
@@ -143,18 +143,39 @@ export const hostawayMockReviews: HostawayReview[] = [
     channel: "vrbo",
     type: "guest-to-host",
     status: "published",
-    rating: 6.8,
+    rating: 8,
     publicReview: "Loved the decor but had trouble with hot water once.",
     privateReview: "Water boiler reset did the trick but took time.",
     reviewCategory: [
-      { category: "cleanliness", rating: 7 },
-      { category: "communication", rating: 6 },
-      { category: "amenities", rating: 6 },
-      { category: "value", rating: 6 }
+      { category: "cleanliness", rating: 8 },
+      { category: "communication", rating: 8 },
+      { category: "amenities", rating: 7 },
+      { category: "value", rating: 8 }
     ],
     submittedAt: "2024-09-28T07:30:00Z",
     guestName: "Trevor B.",
     stayDate: "2024-09-20"
+  },
+  {
+    id: 7323,
+    listingId: 303,
+    listingName: "Soho Boutique Flat",
+    channel: "booking.com",
+    type: "guest-to-host",
+    status: "published",
+    rating: 6.5,
+    publicReview: "Great location but heating needed attention during our stay.",
+    privateReview: "Please service the heater before winter guests arrive.",
+    reviewCategory: [
+      { category: "cleanliness", rating: 7 },
+      { category: "communication", rating: 7 },
+      { category: "amenities", rating: 6 },
+      { category: "value", rating: 6 }
+    ],
+    submittedAt: "2024-10-15T10:00:00Z",
+    guestName: "Isabella M.",
+    stayDate: "2024-10-10"
   }
 ];
+
 

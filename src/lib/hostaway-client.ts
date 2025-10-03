@@ -1,6 +1,8 @@
-﻿import { loadHostawayConfig } from "@/config/env";
-import type { HostawayQueryParams } from "@/lib/hostaway.types";
 import type { HostawayReview } from "@/types/reviews";
+import type { HostawayQueryParams } from "@/lib/hostaway.types";
+
+const DEFAULT_BASE_URL = "https://api.hostaway.com";
+const DEFAULT_REVIEWS_ENDPOINT = "/v1/reviews";
 
 type HostawayApiResponse = {
   status?: string;
@@ -10,28 +12,19 @@ type HostawayApiResponse = {
   items?: unknown;
 };
 
-const debugHostaway = process.env.NEXT_PUBLIC_DEBUG_HOSTAWAY === "true";
-
 export async function fetchHostawayReviewsFromApi(
   params: HostawayQueryParams
 ): Promise<HostawayReview[] | null> {
-  const config = loadHostawayConfig();
-  const { accountId, apiKey, baseUrl, reviewsEndpoint } = config;
+  const accountId = process.env.HOSTAWAY_ACCOUNT_ID;
+  const apiKey = process.env.HOSTAWAY_API_KEY;
+  const baseUrl = process.env.HOSTAWAY_API_BASE ?? DEFAULT_BASE_URL;
+  const endpoint = process.env.HOSTAWAY_REVIEWS_ENDPOINT ?? DEFAULT_REVIEWS_ENDPOINT;
 
   if (!accountId || !apiKey) {
     return null;
   }
 
-  if (debugHostaway && process.env.NODE_ENV !== "production") {
-    const maskedKey = apiKey.length > 8 ? `${apiKey.slice(0, 4)}�${apiKey.slice(-4)}` : apiKey;
-    console.log("[Hostaway] Using credentials", { accountId, apiKey: maskedKey });
-  }
-
-  const requestUrl = buildRequestUrl(baseUrl, reviewsEndpoint, accountId, params);
-
-  if (debugHostaway && process.env.NODE_ENV !== "production") {
-    console.log("[Hostaway] Requesting", requestUrl);
-  }
+  const requestUrl = buildRequestUrl(baseUrl, endpoint, accountId, params);
 
   try {
     const response = await fetch(requestUrl, {
@@ -159,9 +152,9 @@ function mapToHostawayReview(raw: unknown, fallbackIndex: number): HostawayRevie
   const listingName =
     resolveString(
       record.listingName ??
-        record.listing_name ??
-        (record.listing as Record<string, unknown>)?.name ??
-        (record.listing as Record<string, unknown>)?.listingName
+      record.listing_name ??
+      (record.listing as Record<string, unknown>)?.name ??
+      (record.listing as Record<string, unknown>)?.listingName
     ) ?? `Listing ${listingId}`;
 
   const idCandidate = resolveNumber(record.id ?? record.reviewId ?? record.review_id ?? record.externalId);
@@ -231,6 +224,3 @@ function resolveCategories(input: unknown): HostawayReview["reviewCategory"] {
     })
     .filter((item): item is { category: string; rating: number | null } => item !== null);
 }
-
-
-

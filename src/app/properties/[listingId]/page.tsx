@@ -1,14 +1,15 @@
-﻿import { PropertyPageClient } from "@/components/property/PropertyPageClient";
+import { PropertyPageClient } from "@/components/property/PropertyPageClient";
 import { propertyMetadata } from "@/data/listings";
 
 interface PropertyPageProps {
-  params: {
+  params: Promise<{
     listingId: string;
-  };
+  }>;
 }
 
-export default function PropertyPage({ params }: PropertyPageProps) {
-  return <PropertyPageClient listingId={params.listingId} />;
+export default async function PropertyPage({ params }: PropertyPageProps) {
+  const { listingId } = await params;
+  return <PropertyPageClient listingId={listingId} />;
 }
 
 export function generateStaticParams() {

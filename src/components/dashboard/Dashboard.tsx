@@ -36,6 +36,11 @@ const dataSourceCopy: Record<ReviewDataSource, { label: string; description: str
   },
 };
 
+type TrendInsight = {
+  delta: number;
+  direction: "up" | "down";
+};
+
 export default function Dashboard() {
   const [filters, setFilters] = useState<ReviewFilters>(defaultFilters);
   const { data, listings, isLoading, error, refetch } = useNormalizedReviews(filters);
@@ -384,7 +389,7 @@ interface ListingDetailPanelProps {
   isReady: boolean;
   focusAreas: Array<{ key: string; label: string; score: number }>;
   recurringIssues: Array<{ key: string; label: string; count: number }>;
-  trend: { delta: number } | null;
+  trend: TrendInsight | null;
   filters: ReviewFilters;
 }
 
@@ -427,12 +432,12 @@ function ListingDetailPanel({
         <div className="flex flex-col items-start gap-3 sm:items-end">
           {trend ? (
             <span
-              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${trend.delta >= 0 ? "bg-emerald-500/20 text-emerald-200" : "bg-rose-500/20 text-rose-200"}`}
+              className={`inline-flex items-center gap-2 rounded-full px-3 py-1 text-xs font-semibold ${trend.direction === "up" ? "bg-emerald-500/20 text-emerald-200" : "bg-rose-500/20 text-rose-200"}`}
             >
-              {trend.delta >= 0 ? "Trending up" : "Trending down"}
+              {trend.direction === "up" ? "Trending up" : "Trending down"}
               <span className="font-normal text-slate-200">
                 {trend.delta >= 0 ? "+" : ""}
-                {trend.delta.toFixed(1)} pts vs previous period
+                {Math.abs(trend.delta).toFixed(1)} pts vs previous period
               </span>
             </span>
           ) : null}
@@ -729,9 +734,9 @@ function deriveRecurringIssues(listing: NormalizedListing | null) {
   return Array.from(counts.values()).sort((a, b) => b.count - a.count).slice(0, 4);
 }
 
-function deriveTrend(listing: NormalizedListing | null) {
+function deriveTrend(listing: NormalizedListing | null): TrendInsight | null {
   if (!listing || listing.timeSeries.length < 2) {
-    return null as { delta: number } | null;
+    return null;
   }
 
   const sorted = [...listing.timeSeries].sort((a, b) => a.period.localeCompare(b.period));
@@ -742,8 +747,14 @@ function deriveTrend(listing: NormalizedListing | null) {
     return null;
   }
 
+  const delta = latest.averageRating - previous.averageRating;
+  if (Math.abs(delta) < 0.25) {
+    return null;
+  }
+
   return {
-    delta: latest.averageRating - previous.averageRating,
+    delta,
+    direction: delta >= 0 ? "up" : "down",
   };
 }
 
